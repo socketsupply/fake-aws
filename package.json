@@ -1,0 +1,33 @@
+{
+  "name": "fake-aws",
+  "version": "0.1.1",
+  "description": "Fake AWS servers for used in integration test suites",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test/index.js"
+  },
+  "author": "Raynos <raynos2@gmail.com>",
+  "repository": "git://github.com/optoolco/fake-aws.git",
+  "homepage": "https://github.com/optoolco/fake-aws",
+  "bugs": {
+    "url": "https://github.com/optoolco/fake-aws/issues",
+    "email": "raynos2@gmail.com"
+  },
+  "contributors": [
+    {
+      "name": "Raynos"
+    },
+    {
+      "name": "heapwolf"
+    }
+  ],
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "http://github.com/optoolco/fake-aws/raw/master/LICENSE"
+    }
+  ],
+  "binDependencies": {},
+  "devDependencies": {},
+  "dependencies": {}
+}
