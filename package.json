@@ -32,7 +32,8 @@
   ],
   "tsdocstandard": {
     "ignore": [
-      "s3/scripts/cache-from-prod.js"
+      "s3/scripts/cache-from-prod.js",
+      "lambda/scripts/cache-from-prod.js"
     ]
   },
   "binDependencies": {

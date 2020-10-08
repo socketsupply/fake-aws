@@ -14,6 +14,8 @@
     "_types/**/*.d.ts",
     "node_modules/tape-harness/index.js",
     "s3/index.js",
-    "s3/test/**/*.js"
+    "lambda/index.js",
+    "s3/test/**/*.js",
+    "lambda/test/**/*.js"
   ]
 }
