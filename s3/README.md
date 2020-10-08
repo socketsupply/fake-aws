@@ -7,7 +7,7 @@ in memory
 ## Example
 
 ```js
-const FakeS3 = require('fake-aws/s3');
+const FakeS3 = require('@optoolco/fake-aws/s3');
 const AWS = require('aws-sdk')
 
 const server = new FakeS3({

@@ -6,7 +6,7 @@ Setup a fake Lambda API server for testing purposes
 
 ```js
 const AWS = require('aws-sdk')
-const FakeLambdaAPI = require('fake-aws/lambda').FakeLambdaAPI
+const FakeLambdaAPI = require('@optoolco/fake-aws/lambda').FakeLambdaAPI
 
 async function test() {
   const server = new FakeLambdaAPI({ port: 0 })
