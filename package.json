@@ -1,6 +1,6 @@
 {
   "name": "fake-aws",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Fake AWS servers for used in integration test suites",
   "main": "index.js",
   "scripts": {
