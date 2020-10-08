@@ -8,9 +8,9 @@ you can use `require('aws-sdk')` to talk to them.
 
 ## SERVERS IMPLEMENTED
 
- - `'fake-aws/s3`
- - `'fake-aws/cloudwatchlogs'`
- - `'fake-aws/lambda'`
+ - [`'fake-aws/s3`](./s3/README.md)
+ - [`'fake-aws/cloudwatchlogs'`](./cloudwatchlogs/README.md)
+ - [`'fake-aws/lambda'`](./lambda/README.md)
 
 Currently a subset of three of the clients is implemented
 as a fake server. Check out the READMEs for each directory

@@ -15,7 +15,9 @@
     "node_modules/tape-harness/index.js",
     "s3/index.js",
     "lambda/index.js",
+    "cloudwatchlogs/index.js",
     "s3/test/**/*.js",
-    "lambda/test/**/*.js"
+    "lambda/test/**/*.js",
+    "cloudwatchlogs/test/**/*.js"
   ]
 }
