@@ -4,7 +4,10 @@
   "description": "Fake AWS servers for used in integration test suites",
   "main": "index.js",
   "scripts": {
-    "test": "node test/index.js"
+    "tsc": "npr tsc -p jsconfig.json --maxNodeModuleJsDepth 0",
+    "lint": "npr tsdocstandard",
+    "test": "npm run tsc && npm run lint && node test/index.js && npm run type-coverage",
+    "type-coverage": "npr type-coverage -p jsconfig.json --ignore-catch --strict --at-least 100"
   },
   "author": "Raynos <raynos2@gmail.com>",
   "repository": "git://github.com/optoolco/fake-aws.git",
@@ -27,7 +30,24 @@
       "url": "http://github.com/optoolco/fake-aws/raw/master/LICENSE"
     }
   ],
-  "binDependencies": {},
-  "devDependencies": {},
+  "tsdocstandard": {
+    "ignore": [
+      "s3/scripts/cache-from-prod.js"
+    ]
+  },
+  "binDependencies": {
+    "tsdocstandard": "15.7.1",
+    "type-coverage": "2.13.3",
+    "typescript": "4.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "14.11.5",
+    "@pre-bundled/rimraf": "3.0.0-patch-1",
+    "@pre-bundled/tape": "4.11.0",
+    "aws-sdk": "2.507.0",
+    "npm-bin-deps": "1.10.1",
+    "tape-harness": "5.0.0",
+    "uuid": "8.3.1"
+  },
   "dependencies": {}
 }
