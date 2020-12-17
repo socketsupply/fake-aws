@@ -2,6 +2,7 @@
 'use strict'
 
 const AWS = require('aws-sdk')
+
 /** @type {import('@pre-bundled/tape')} */
 const tape = require('@pre-bundled/tape')
 const tapeCluster = require('tape-harness')
@@ -48,6 +49,16 @@ class TestHarness {
       accessKeyId: accessKeyId,
       secretAccessKey: 'abc'
     })
+  }
+
+  /**
+   * @returns {AWS.Lambda}
+   */
+  getLambda () {
+    if (!this.lambda) {
+      throw new Error('not bootstrapped')
+    }
+    return this.lambda
   }
 
   /**

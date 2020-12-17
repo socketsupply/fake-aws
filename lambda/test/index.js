@@ -5,6 +5,8 @@ process.on('unhandledRejection', (maybeErr) => {
   process.nextTick(() => { throw err })
 })
 
+/** @type {import('assert')} */
+const assert = require('assert')
 const util = require('util')
 /** @type {import('@pre-bundled/rimraf')} */
 const rimrafCb = require('@pre-bundled/rimraf')
@@ -27,6 +29,33 @@ test('listing functions', async (harness, t) => {
   t.deepEqual(data.Functions, [])
 
   t.end()
+})
+
+test('list tags for function', async (harness, t) => {
+  const lambdaServer = harness.lambdaServer
+
+  const arn = 'arn:aws:lambda:us-east-1:123456789012:function:account'
+  lambdaServer.populateFunctions(
+    '123', 'us-east-1', [{
+      FunctionName: 'account',
+      FunctionArn: arn
+    }]
+  )
+
+  const data = await harness.listFunctions()
+  t.ok(data)
+
+  const lambda = harness.getLambda()
+
+  const tags = await lambda.listTags({
+    Resource: arn
+  }).promise()
+
+  t.ok(tags)
+  t.ok(tags.Tags)
+  assert(tags.Tags)
+
+  t.equal(Object.keys(tags.Tags).length, 0)
 })
 
 test('listing functions with populate()', async (harness, t) => {

@@ -61,7 +61,8 @@ test('can fetch uneven pages of log events', async (harness, t) => {
       logGroupName: 'test-group',
       logStreamName: 'test-stream',
       nextToken: result
-        ? result.nextBackwardToken : undefined
+        ? result.nextBackwardToken
+        : undefined
     }).promise()
 
     if (result.events && result.events.length > 0) {

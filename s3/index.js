@@ -202,7 +202,8 @@ class FakeS3 {
 
     const addr = this.httpServer.address()
     const port = (addr && typeof addr === 'object')
-      ? addr.port : -1
+      ? addr.port
+      : -1
     this.hostPort = `localhost:${port}`
     this.setupBuckets()
 
@@ -627,7 +628,7 @@ class FakeS3 {
 
     if (startAfter) {
       const index = rawObjects.findIndex((o) => {
-        if (o.type === 's3-common-prefix') return
+        if (o.type === 's3-common-prefix') return false
         return o.key === startAfter
       })
       if (index >= 0) {
