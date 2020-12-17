@@ -2,6 +2,7 @@
 'use strict'
 
 const AWS = require('aws-sdk')
+
 /** @type {import('@pre-bundled/tape')} */
 const tape = require('@pre-bundled/tape')
 const tapeCluster = require('tape-harness')

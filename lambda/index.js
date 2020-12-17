@@ -88,11 +88,11 @@ class FakeLambdaAPI {
   }
 
   /**
-   * @param {import('aws-sdk')} AWS
+   * @param {import('aws-sdk')} aws
    * @returns {Promise<string[]>}
    */
-  async getAllRegions (AWS) {
-    const ec2 = new AWS.EC2({ region: 'us-east-1' })
+  async getAllRegions (aws) {
+    const ec2 = new aws.EC2({ region: 'us-east-1' })
 
     const data = await ec2.describeRegions().promise()
 
@@ -104,30 +104,30 @@ class FakeLambdaAPI {
   }
 
   /**
-   * @param {import('aws-sdk')} AWS
+   * @param {import('aws-sdk')} aws
    * @param {string[] | 'all'} regions
    * @returns {Promise<void>}
    */
-  async fetchAndCache (AWS, regions) {
+  async fetchAndCache (aws, regions) {
     if (regions === 'all') {
-      regions = await this.getAllRegions(AWS)
+      regions = await this.getAllRegions(aws)
     }
 
     /** @type {Promise<void>[]} */
     const tasks = []
     for (const region of regions) {
-      tasks.push(this.fetchAndCacheForRegion(AWS, region))
+      tasks.push(this.fetchAndCacheForRegion(aws, region))
     }
     await Promise.all(tasks)
   }
 
   /**
-   * @param {import('aws-sdk')} AWS
+   * @param {import('aws-sdk')} aws
    * @param {string} region
    * @returns {Promise<void>}
    */
-  async fetchAndCacheForRegion (AWS, region) {
-    const lambda = new AWS.Lambda({
+  async fetchAndCacheForRegion (aws, region) {
+    const lambda = new aws.Lambda({
       region: region
     })
 
