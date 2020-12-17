@@ -43,6 +43,14 @@ class FakeLambdaAPI {
 
     /** @type {Map<string, FunctionConfiguration[]>} */
     this._functions = new Map()
+
+    /**
+     * This maps from a profileName to an accountId, this is
+     * necessary for handling ARNs.
+     *
+     * @type {Map<string, string>}
+     */
+    this._accountIdMapping = new Map()
     /* eslint-enable @typescript-eslint/no-unsafe-assignment */
   }
 
@@ -206,7 +214,27 @@ class FakeLambdaAPI {
   populateFunctions (profile, region, functions) {
     const key = `${profile}--${region}`
     const funcs = this._functions.get(key) || []
-    funcs.push(...functions)
+
+    for (const $function of functions) {
+      if ($function.FunctionArn) {
+        const arn = $function.FunctionArn
+        const parts = arn.split(':')
+        const accountId = parts[4]
+
+        const knownAccountId = this._accountIdMapping.get(profile)
+        if (!knownAccountId) {
+          this._accountIdMapping.set(profile, accountId)
+        } else {
+          if (knownAccountId !== accountId) {
+            throw new Error(
+              'cannot populate functions from multiple ' +
+                'accounts under on profile'
+            )
+          }
+        }
+      }
+      funcs.push($function)
+    }
 
     this._functions.set(key, funcs)
   }
@@ -230,6 +258,15 @@ class FakeLambdaAPI {
           url.startsWith('/2015-03-31/functions/')
       ) {
         const respBody = this._handleListFunctions(req, bodyBuf)
+
+        res.writeHead(200, {
+          'Content-Type': 'application/json'
+        })
+        res.end(JSON.stringify(respBody))
+      } else if (req.method === 'GET' &&
+          url.startsWith('/2017-03-31/tags/')
+      ) {
+        const respBody = this._handleListTags(req, bodyBuf)
 
         res.writeHead(200, {
           'Content-Type': 'application/json'
@@ -304,6 +341,20 @@ class FakeLambdaAPI {
     }
 
     return response
+  }
+
+  /**
+   *
+   * @param {http.IncomingMessage} _req
+   * @param {Buffer} _bodyBuf
+   * @returns {AWS.Lambda.Types.ListTagsResponse}
+   */
+  _handleListTags (_req, _bodyBuf) {
+    // TODO: Allow for populating tags and returning them.
+
+    return {
+      Tags: {}
+    }
   }
 }
 exports.FakeLambdaAPI = FakeLambdaAPI

@@ -51,6 +51,16 @@ class TestHarness {
   }
 
   /**
+   * @returns {AWS.Lambda}
+   */
+  getLambda () {
+    if (!this.lambda) {
+      throw new Error('not bootstrapped')
+    }
+    return this.lambda
+  }
+
+  /**
    * @param {{ MaxItems?: number, Marker?: string }} options
    * @returns {Promise<AWS.Lambda.Types.ListFunctionsResponse>}
    */
