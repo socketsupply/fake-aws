@@ -131,6 +131,18 @@ class TestHarness {
   }
 
   /**
+   * @param {string} key
+   * @returns {Promise<import('aws-sdk').S3.DeleteObjectOutput>}
+   */
+  async deleteFile (key) {
+    const bucket = this.buckets[0] || 'my-bucket'
+    return this.getS3().deleteObject({
+      Bucket: bucket,
+      Key: key
+    }).promise()
+  }
+
+  /**
    * @param {string} bucket
    * @param {number} count
    * @typedef {import('../index.js').S3ObjectAlias} S3Object
