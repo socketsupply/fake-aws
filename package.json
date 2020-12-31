@@ -1,6 +1,6 @@
 {
   "name": "@optoolco/fake-aws",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "description": "Fake AWS servers for used in integration test suites",
   "main": "index.js",
   "scripts": {
