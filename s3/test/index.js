@@ -127,6 +127,24 @@ test('listen on specific port', {
   assert.end()
 })
 
+test('can deleteObject', {
+}, async (harness, assert) => {
+  await harness.uploadFile('foo/my-file', 'some text')
+  await harness.uploadFile('foo/my-file2', 'some text 2')
+
+  await harness.waitForFiles('my-bucket', 2)
+
+  const files = harness.getFiles('my-bucket')
+  assert.equal(files.objects.length, 2)
+
+  await harness.deleteFile('foo/my-file')
+
+  const files2 = harness.getFiles('my-bucket')
+  assert.equal(files2.objects.length, 1)
+
+  assert.end()
+})
+
 test('createBucket not supported', {
 }, async (harness, assert) => {
   try {

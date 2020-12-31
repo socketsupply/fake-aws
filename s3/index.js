@@ -120,6 +120,14 @@ class S3Bucket {
   }
 
   /**
+   * @param {string} key
+   * @returns {void}
+   */
+  deleteObject (key) {
+    this._objects.delete(key)
+  }
+
+  /**
    * @returns {S3Object[]}
    */
   getObjects () {
@@ -484,6 +492,36 @@ class FakeS3 {
 
   /**
    * @param {import('http').IncomingMessage} req
+   * @param {Buffer} _buf
+   * @returns {void}
+   */
+  _handleDeleteObject (req, _buf) {
+    const reqUrl = req.url || ''
+
+    /* eslint-disable-next-line node/no-deprecated-api */
+    const parsedUrl = url.parse(reqUrl, true)
+    const parts = (parsedUrl.pathname || '').split('/')
+    if (parts.length < 3 || parts[0] !== '') {
+      throw new Error('invalid url, expected /:bucket/:key')
+    }
+
+    const bucket = parts[1]
+    const key = parts.slice(2, parts.length).join('/')
+
+    const bucketsMap = this._profiles.get('default')
+    const s3bucket = bucketsMap ? bucketsMap.get(bucket) : null
+    if (!s3bucket) {
+      const err = new NoSuchBucketError(
+        'The specified bucket does not exist', bucket
+      )
+      throw err
+    }
+
+    s3bucket.deleteObject(key)
+  }
+
+  /**
+   * @param {import('http').IncomingMessage} req
    * @param {Buffer} buf
    * @returns {S3Object}
    */
@@ -842,6 +880,15 @@ class FakeS3 {
         }
 
         res.setHeader('ETag', JSON.stringify(obj.md5))
+        res.end()
+      } else if (req.method === 'DELETE') {
+        try {
+          this._handleDeleteObject(req, bodyBuf)
+        } catch (err) {
+          return this._writeError(err, res)
+        }
+
+        res.statusCode = 204
         res.end()
       } else if (req.method === 'GET' && req.url === '/') {
         /** @type {string | undefined} */
