@@ -117,6 +117,16 @@ class TestHarness {
   }
 
   /**
+   * @param {string} bucket
+   * @returns {Promise<import('aws-sdk').S3.CreateBucketOutput>}
+   */
+  async createBucket (bucket) {
+    return this.getS3().createBucket({
+      Bucket: bucket
+    }).promise()
+  }
+
+  /**
    * @param {string} key
    * @param {Buffer | string} body
    * @returns {Promise<import('aws-sdk').S3.ManagedUpload.SendData>}
