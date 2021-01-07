@@ -1,6 +1,14 @@
 // @ts-check
 'use strict'
 
+/**
+ * Re-implementation of https://github.com/jamhall/s3rver
+ *
+ * Originally `s3rver` was used and a wrapper was written
+ * around it with extra features. At some point it was simpler
+ * to just re-implement the entire thing instead.
+ */
+
 const http = require('http')
 const util = require('util')
 const url = require('url')
