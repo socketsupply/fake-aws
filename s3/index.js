@@ -1,6 +1,14 @@
 // @ts-check
 'use strict'
 
+/**
+ * Re-implementation of https://github.com/jamhall/s3rver
+ *
+ * Originally `s3rver` was used and a wrapper was written
+ * around it with extra features. At some point it was simpler
+ * to just re-implement the entire thing instead.
+ */
+
 const http = require('http')
 const util = require('util')
 const url = require('url')
@@ -22,6 +30,7 @@ const stripCreds = /Credential=([\w-/0-9a-zA-Z]+),/
  * @typedef {{
  *    message: string,
  *    code?: string,
+ *    statusCode?: number,
  *    resource?: string
  * }} S3Error
  * @typedef {{ DisplayName: string, ID: string }} S3BucketOwner
@@ -48,6 +57,11 @@ const stripCreds = /Credential=([\w-/0-9a-zA-Z]+),/
  *        Size: number
  *    }>
  * }} S3BucketGetResponse
+ * @typedef {{
+ *    statusCode: number,
+ *    headers: Record<string, string>,
+ *    body: string
+ * }} Response
  */
 
 class NoSuchBucketError extends Error {
@@ -850,8 +864,97 @@ class FakeS3 {
    */
   _writeError (err, res) {
     const xml = this._buildError(err)
-    res.writeHead(500, { 'Content-Type': 'text/xml' })
+    res.writeHead(err.statusCode || 500, { 'Content-Type': 'text/xml' })
     res.end(xml)
+  }
+
+  /**
+   * @param {import('http').IncomingMessage} req
+   * @param {Buffer} bodyBuf
+   * @returns {Response | null}
+   */
+  _handleServerPut (req, bodyBuf) {
+    const reqUrl = req.url || ''
+
+    const parts = reqUrl.split('/')
+
+    // PUT /:bucket/:key
+    if (parts.length >= 2) {
+      const obj = this._handlePutObject(req, bodyBuf)
+
+      return {
+        headers: {
+          ETag: JSON.stringify(obj.md5)
+        },
+        statusCode: 200,
+        body: ''
+      }
+    }
+
+    // PUT /:bucket
+    if (parts.length === 1) {
+      // TODO impl createBucket()
+    }
+
+    return null
+  }
+
+  /**
+   * @param {import('http').IncomingMessage} req
+   * @param {Buffer} bodyBuf
+   * @returns {Response | null}
+   */
+  _handleServerDelete (req, bodyBuf) {
+    const reqUrl = req.url || ''
+    const parts = reqUrl.split('/')
+
+    // DELETE /:bucket/:key
+    if (parts.length >= 2) {
+      this._handleDeleteObject(req, bodyBuf)
+
+      return {
+        statusCode: 204,
+        headers: {},
+        body: ''
+      }
+    }
+
+    return null
+  }
+
+  /**
+   * @param {import('http').IncomingMessage} req
+   * @param {Buffer} _bodyBuf
+   * @returns {Response | null}
+   */
+  _handleServerGet (req, _bodyBuf) {
+    const reqUrl = req.url || ''
+    const parts = reqUrl.split('/')
+
+    if (reqUrl === '/') {
+      const xml = this._handleListBuckets(req)
+      return {
+        statusCode: 200,
+        headers: {
+          'Content-Type': 'text/xml'
+        },
+        body: xml
+      }
+    }
+
+    // GET /:bucket
+    if (parts.length === 2) {
+      const xml = this._handleGetObjectsV2(req)
+      return {
+        statusCode: 200,
+        headers: {
+          'Content-Type': 'text/xml'
+        },
+        body: xml
+      }
+    }
+
+    return null
   }
 
   /**
@@ -870,53 +973,37 @@ class FakeS3 {
     req.on('end', () => {
       const bodyBuf = Buffer.concat(buffers)
 
-      if (req.method === 'PUT') {
-        /** @type {S3Object | undefined} */
-        let obj
-        try {
-          obj = this._handlePutObject(req, bodyBuf)
-        } catch (err) {
-          return this._writeError(err, res)
-        }
+      /** @type {Response | null} */
+      let resp = null
 
-        res.setHeader('ETag', JSON.stringify(obj.md5))
-        res.end()
-      } else if (req.method === 'DELETE') {
-        try {
-          this._handleDeleteObject(req, bodyBuf)
-        } catch (err) {
-          return this._writeError(err, res)
+      try {
+        if (req.method === 'PUT') {
+          resp = this._handleServerPut(req, bodyBuf)
+        } else if (req.method === 'DELETE') {
+          resp = this._handleServerDelete(req, bodyBuf)
+        } else if (req.method === 'GET') {
+          resp = this._handleServerGet(req, bodyBuf)
+        } else {
+          const err = new Error(
+            `url not supported: ${req.method} ${req.url}`
+          )
+          Reflect.set(err, 'statusCode', 404)
+          throw err
         }
-
-        res.statusCode = 204
-        res.end()
-      } else if (req.method === 'GET' && req.url === '/') {
-        /** @type {string | undefined} */
-        let xml
-        try {
-          xml = this._handleListBuckets(req)
-        } catch (err) {
-          return this._writeError(err, res)
-        }
-
-        res.writeHead(200, { 'Content-Type': 'text/xml' })
-        res.end(xml)
-      } else if (req.method === 'GET') {
-        /** @type {string | undefined} */
-        let xml
-        try {
-          xml = this._handleGetObjectsV2(req)
-        } catch (err) {
-          return this._writeError(err, res)
-        }
-
-        res.writeHead(200, { 'Content-Type': 'text/xml' })
-        res.end(xml)
-      } else {
-        this._writeError(new Error(
-          `url not supported: ${req.method} ${req.url}`
-        ), res)
+      } catch (err) {
+        return this._writeError(err, res)
       }
+
+      if (!resp) {
+        const err = new Error(
+          `url not supported: ${req.method} ${req.url}`
+        )
+        Reflect.set(err, 'statusCode', 404)
+        return this._writeError(err, res)
+      }
+
+      res.writeHead(resp.statusCode, resp.headers)
+      res.end(resp.body)
     })
   }
 }

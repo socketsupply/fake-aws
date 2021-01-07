@@ -145,6 +145,21 @@ test('can deleteObject', {
   assert.end()
 })
 
+test.skip('can create new buckets', {
+}, async (harness, assert) => {
+  await harness.createBucket('bucket-abc')
+
+  const files = harness.getFiles('bucket-abc')
+  assert.equal(files.objects.length, 0)
+
+  await harness.uploadFileForBucket(
+    'bucket-abc', 'foo/my-file', 'some text'
+  )
+
+  const files2 = harness.getFiles('bucket-abc')
+  assert.equal(files2.objects.length, 1)
+})
+
 test('createBucket not supported', {
 }, async (harness, assert) => {
   try {
@@ -258,7 +273,7 @@ test('getObject not supported', {
   } catch (maybeErr) {
     /* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */
     const err = /** @type {StatusError} */ (maybeErr)
-    assert.equal(err.message, 'invalid url, expected /:bucket')
+    assert.equal(err.message, 'url not supported: GET /my-bucket/my-multipart.txt')
     assert.equal(err.code, 'InternalError')
 
     return
